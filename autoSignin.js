@@ -4,20 +4,25 @@
  * @version 0.1
  */
 
+const scriptName = "阿里云盘签到";
 const updateAccesssTokenURL = "https://auth.aliyundrive.com/v2/account/token"
 const signinURL = "https://member.aliyundrive.com/v1/activity/sign_in_list"
-const refreshToeknArry = [
+/*#const refreshTokenArray = [
     "",
     ""
-    ]
-
+    ]*/
+refreshTokenArray=process.env.Aliyunpan_refleshToken.split('&')
+if (!refreshTokenArray.length) {
+    console.log('未获取到refreshToken, 程序终止')
+    process.exit(1)
+  }
 const fetch = require("node-fetch")
 const notify = require('./sendNotify');
-
-
-!(async() => {
-    for (const elem of refreshToeknArry) {
-        
+ 
+  !(async() => {
+    for (const elem of refreshTokenArray) {
+        index=1
+        let Msg0 = ""
         const queryBody = {
             'grant_type': 'refresh_token',
             'refresh_token': elem
@@ -31,34 +36,55 @@ const notify = require('./sendNotify');
         })
         .then((res) => res.json())
         .then((json) => {
-            // console.log(json);
+            //console.log('***************1**********')
+             //console.log(json);
 
             let access_token = json.access_token;
-            console.log(access_token);
-            
+            let nick_name = json.nick_name;
+                      //console.log(access_token);
             
             //签到
-            fetch(signinURL, {
+                  
+                fetch(signinURL, {
                 method: "POST",
                 body: JSON.stringify(queryBody),
                 headers: {'Authorization': 'Bearer '+access_token,'Content-Type': 'application/json'}
             })
             .then((res) => res.json())
             .then((json) => {
-                console.log(json);
-            })
+                //console.log(json);
+                //console.log(nick_name + ":");
+                Msg0 = Msg0 + nick_name + ":"
+                
+                      if (!json.success) {
+                      console.log('签到失败')
+                      Msg0 = Msg0 + "签到失败\n"
+                      }
+
+                 //console.log('签到成功')
+                 Msg0 = Msg0 + "签到成功\n"
+
+                 const { signInLogs, signInCount } = json.result
+                 const currentSignInfo = signInLogs[signInCount - 1] // 当天签到信息
+
+                  //console.log(`本月累计签到 ${signInCount} 天`)
+                  Msg0 = Msg0 + `本月累计签到 ${signInCount} 天\n`
+                  //console.log(Msg0)
+                  //console.log('****************')
+                  Msg0 = Msg0 + "***************************"
+                  console.log(Msg0)
+                notify.sendNotify(`阿里云盘签到结果`,Msg0)
+             })
             .catch((err) => console.log(err))
             
         })
         .catch((err) => console.log(err))
-
-
-    }
+         
+    } 
+  
     // await notify.sendNotifyBark(`v2free 自动签到结果`,allnotify)
-    
-
+      
 })().catch((e) => {
     console.error(`❗️  运行错误！\n${e}`)
 }).finally()
 // notify.sendNotify(`v2free 自动签到结果`,allnotify)
-
