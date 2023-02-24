@@ -66,10 +66,17 @@ const notify = require('./sendNotify');
 
                  const { signInLogs, signInCount } = json.result
                  const currentSignInfo = signInLogs[signInCount - 1] // 当天签到信息
-
+                 //console.log(currentSignInfo.reward)
+                 //console.log(currentSignInfo.reward.name)
+                 //console.log(currentSignInfo.reward.description)
+                  if (  currentSignInfo.reward.name ) {
+                    Msg0 = Msg0 +`本次签到获得 ${currentSignInfo.reward.name} \n`  
+                        }
+                         
+        
                   //console.log(`本月累计签到 ${signInCount} 天`)
                   Msg0 = Msg0 + `本月累计签到 ${signInCount} 天\n`
-                  //console.log(Msg0)
+                  
                   //console.log('****************')
                   Msg0 = Msg0 + "***************************"
                   console.log(Msg0)
